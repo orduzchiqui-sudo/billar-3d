@@ -157,11 +157,7 @@ textarea{width:100%;min-height:90px;font:.72rem/1.4 var(--f-mono);border:1px sol
 </div>
 
 <script>
-window.__t3d=setTimeout(function(){ if(window.__billarOK) return; var l=document.getElementById('loading'); if(l) l.querySelector('p').textContent='El 3D no cargó en 15 segundos. Si lo abriste en la app de Claude, abre este mismo link en Chrome. Si sigue igual, mándale una captura de esta pantalla a Ares.'; },15000);
-</script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-<script>
-(function(){
+window.__startBillar=function(){
 'use strict';
 const $=(s,r)=>(r||document).querySelector(s);
 const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
@@ -236,8 +232,9 @@ let state=propuesta();
 
 /* ---------- Motor 3D ---------- */
 const scene=new THREE.Scene();
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+const coarse=!!(window.matchMedia&&matchMedia('(pointer: coarse)').matches);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:!coarse,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,coarse?1.25:1.5));
 let needsRender=true;
 function invalidate(){ needsRender=true; }
 renderer.outputEncoding=THREE.sRGBEncoding;
@@ -269,7 +266,11 @@ function canvasTex(w,h,draw,repeat){
   if(repeat){ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(repeat[0],repeat[1]); }
   return t;
 }
-function std(h,o){ const p={color:col(h)}; if(o) ['emissive','emissiveIntensity','map','side','transparent','opacity','depthWrite'].forEach(k=>{ if(o[k]!==undefined) p[k]=o[k]; }); return new THREE.MeshLambertMaterial(p); }
+const MATS=new Map();
+function std(h,o){ const own=!!(o&&o.own), key=h+'|'+(o?Object.keys(o).sort().map(k=>k+':'+(o[k]&&o[k].isColor?o[k].getHexString():String(o[k]))).join(','):'');
+  if(!own&&MATS.has(key)) return MATS.get(key);
+  const p={color:col(h)}; if(o) ['emissive','emissiveIntensity','map','side','transparent','opacity','depthWrite'].forEach(k=>{ if(o[k]!==undefined) p[k]=o[k]; });
+  const m=new THREE.MeshLambertMaterial(p); if(!own){ m.userData.shared=true; MATS.set(key,m); } return m; }
 function box(w,h,d){ return new THREE.BoxGeometry(w,h,d); }
 function mesh(geo,mat,x,y,z,parent){ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); parent.add(m); return m; }
 function shared(m){ m.userData.shared=true; return m; }
@@ -378,7 +379,7 @@ let pickMeshes=[];
 const BALLS=['#f2c230','#2f5fd0','#d0302f','#6a3fb5','#f07b1d','#2c8a4a','#7a1f2b','#111111'];
 const BUILD={
   mesa(o){ const g=o.group, p=o.rec.p;
-    const wood=std('#3a2416',{roughness:.55}), dark=std('#1a1411',{roughness:.6}), felt=std(p.pano||'#1f6b4f',{roughness:.95,emissive:col(p.pano||'#1f6b4f'),emissiveIntensity:0}), cush=std(p.pano||'#1f6b4f',{roughness:.95}), black=std('#0b0b0b',{roughness:.5});
+    const wood=std('#3a2416',{roughness:.55}), dark=std('#1a1411',{roughness:.6}), felt=std(p.pano||'#1f6b4f',{own:true,emissive:col(p.pano||'#1f6b4f'),emissiveIntensity:0}), cush=std(p.pano||'#1f6b4f',{own:true}), black=std('#0b0b0b',{roughness:.5});
     cush.color.multiplyScalar(.78); o.mats={felt,cush};
     [[-.85,-.4],[.85,-.4],[-.85,.4],[.85,.4]].forEach(([x,z])=>mesh(box(.22,.12,.22),dark,x,.06,z,g));
     mesh(box(1.95,.5,.95),wood,0,.37,0,g); mesh(box(2.3,.12,1.3),wood,0,.70,0,g); mesh(box(2.04,.02,1.04),felt,0,.77,0,g);
@@ -386,11 +387,11 @@ const BUILD={
     mesh(box(.13,.05,1.04),dark,1.085,.805,0,g); mesh(box(.13,.05,1.04),dark,-1.085,.805,0,g);
     mesh(box(2.04,.04,.05),cush,0,.80,.495,g); mesh(box(2.04,.04,.05),cush,0,.80,-.495,g);
     mesh(box(.05,.04,.94),cush,.995,.80,0,g); mesh(box(.05,.04,.94),cush,-.995,.80,0,g);
-    const pg=new THREE.CylinderGeometry(.06,.06,.07,14);
-    [[-1.02,-.52],[1.02,-.52],[-1.02,.52],[1.02,.52],[0,-.545],[0,.545]].forEach(([x,z])=>mesh(pg,black,x,.80,z,g));
-    const bg=new THREE.SphereGeometry(.028,12,8); let k=0;
-    for(let i=0;i<5;i++) for(let j=0;j<=i;j++){ mesh(bg,std(BALLS[k%8],{roughness:.25}),.5+i*.049,.808,(j-i/2)*.057,g); k++; }
-    mesh(bg,std('#f4f1e8',{roughness:.25}),-.55,.808,0,g);
+    const m4=new THREE.Matrix4(), pk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.06,.06,.07,12),black,6);
+    [[-1.02,-.52],[1.02,-.52],[-1.02,.52],[1.02,.52],[0,-.545],[0,.545]].forEach(([x,z],i)=>{ m4.makeTranslation(x,.80,z); pk.setMatrixAt(i,m4); }); g.add(pk);
+    const balls=new THREE.InstancedMesh(new THREE.SphereGeometry(.028,10,6),std('#ffffff',{inst:1}),16); let k=0;
+    for(let i=0;i<5;i++) for(let j=0;j<=i;j++){ m4.makeTranslation(.5+i*.049,.808,(j-i/2)*.057); balls.setMatrixAt(k,m4); balls.setColorAt(k,col(BALLS[k%8])); k++; }
+    m4.makeTranslation(-.55,.808,0); balls.setMatrixAt(15,m4); balls.setColorAt(15,col('#f4f1e8')); g.add(balls);
     const metal=std('#1b1f1d',{roughness:.4,metalness:.4}), shadeM=std('#173b2c',{roughness:.5,metalness:.2,side:THREE.DoubleSide});
     const bulb=new THREE.MeshBasicMaterial({color:col('#fff1cf')}); o.mats.bulb=bulb;
     mesh(box(1.5,.04,.1),metal,0,1.73,0,g);
@@ -408,7 +409,7 @@ const BUILD={
     const s=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex('M'+p.num),depthTest:false,transparent:true})); s.scale.set(.56,.28,1); s.position.set(0,2.32,0); s.renderOrder=20; g.add(s); o.label=s;
   },
   barra(o){ const g=o.group, p=o.rec.p;
-    const front=std(p.frente||'#6b4428',{roughness:.7}), top=std('#2a2522',{roughness:.35}), inner=std('#3a3532',{roughness:.8}); o.mats={front};
+    const front=std(p.frente||'#6b4428',{own:true}), top=std('#2a2522',{roughness:.35}), inner=std('#3a3532',{roughness:.8}); o.mats={front};
     mesh(box(.6,1.08,3.4),front,-.75,.54,-.1,g); mesh(box(.72,.05,3.5),top,-.75,1.105,-.1,g);
     mesh(box(1.6,1.08,.6),front,-.25,.54,1.9,g); mesh(box(1.6,.05,.72),top,-.25,1.105,1.9,g);
     mesh(box(.6,.9,2.25),inner,.75,.45,.275,g); mesh(box(.62,.04,2.3),top,.75,.92,.275,g);
@@ -432,7 +433,7 @@ const BUILD={
   },
   planta(o){ const g=o.group; mesh(new THREE.CylinderGeometry(.2,.15,.38,16),std('#a65e3a',{roughness:.85}),0,.19,0,g);
     const leaf=std('#2f7a3a',{roughness:.8,flatShading:true}); [[0,.62,0,.26],[.1,.85,.05,.2],[-.08,.8,-.06,.18]].forEach(([x,y,z,r])=>mesh(new THREE.IcosahedronGeometry(r,0),leaf,x,y,z,g)); contactShadow(.8,.8,g); },
-  sofa(o){ const g=o.group, f=std(o.rec.p.tela||'#3d4a5c',{roughness:.95}), leg=std('#151515'); o.mats={tela:f};
+  sofa(o){ const g=o.group, f=std(o.rec.p.tela||'#3d4a5c',{own:true}), leg=std('#151515'); o.mats={tela:f};
     mesh(box(1.8,.22,.8),f,0,.3,0,g); mesh(box(1.8,.16,.62),f,0,.47,.07,g); mesh(box(1.8,.5,.18),f,0,.55,-.31,g); mesh(box(.16,.3,.8),f,-.82,.5,0,g); mesh(box(.16,.3,.8),f,.82,.5,0,g);
     [[-.8,-.32],[.8,-.32],[-.8,.32],[.8,.32]].forEach(([x,z])=>mesh(box(.06,.19,.06),leg,x,.095,z,g)); contactShadow(2.1,1.1,g); },
   tv(o){ const g=o.group, h=o.rec.p.h||WALLI.tv.h; mesh(box(1.1,.65,.06),std('#101112',{roughness:.4}),0,h,.035,g);
@@ -783,7 +784,7 @@ setFloor(state.piso); applyWalls();
 state.objs.forEach(addLive);
 setToggle('#b-noche',prefs.noche); setToggle('#b-cables',prefs.cables); setToggle('#b-zonas',prefs.zonas); setToggle('#b-num',prefs.num);
 applyAllLights(); afterChange(); switchTab(prefs.tab);
-if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ live.forEach(o=>{ if(o.rec.t==='mesa'||o.rec.t==='aviso') rebuild(o.rec.id); }); });
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ live.forEach(o=>{ if(o.label){ const old=o.label.material.map; o.label.material.map=labelTex('M'+o.rec.p.num); o.label.material.needsUpdate=true; if(old) old.dispose(); } if(o.rec.t==='aviso'){ o.avisoOn=null; applyObjLights(o); } }); invalidate(); });
 let lastW=0, lastH=0;
 function loop(now){ requestAnimationFrame(loop);
   const cw=stage.clientWidth, ch=stage.clientHeight; if(cw!==lastW||ch!==lastH){ lastW=cw; lastH=ch; resize(); }
@@ -791,6 +792,21 @@ function loop(now){ requestAnimationFrame(loop);
   updateCut(); if(needsRender){ needsRender=false; renderer.render(scene,camera); if(!window.__billarOK){ window.__billarOK=true; $('#loading').hidden=true; } } }
 requestAnimationFrame(loop);
 initDb();
+};
+</script>
+<script>
+(function(){
+  var L=document.getElementById('loading'), p=L&&L.querySelector('p');
+  function say(t){ if(p) p.textContent=t; }
+  var urls=['https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js','https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'], i=0;
+  setTimeout(function(){ if(!window.__billarOK) say('Sigue cargando… Si la señal está débil, prueba con Wi-Fi.'); },20000);
+  function next(){
+    if(i>=urls.length){ say('No se pudo descargar el motor 3D. Revisa la conexión y recarga la página.'); return; }
+    var s=document.createElement('script'); s.src=urls[i++];
+    s.onload=function(){ say('Armando el local…'); try{ window.__startBillar(); }catch(e){ say('No se pudo armar el 3D: '+e.message); } };
+    s.onerror=next; document.head.appendChild(s);
+  }
+  say('Descargando el motor 3D…'); next();
 })();
 </script>
 </body></html>
