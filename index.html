@@ -196,8 +196,9 @@ const WALL_NAME={izq:'Muro izquierdo',der:'Muro derecho',fachada:'Fachada',banos
 const WG_NAME={izq:'Muro izquierdo',der:'Muro derecho',fondo:'Muro del fondo',fachada:'Fachada por dentro',banos:'Baños, bodega y zona de espera'};
 const DEF_PAREDES={izq:'#3b4247',der:'#3b4247',fondo:'#3b4247',fachada:'#e8eae6',banos:'#e8eae6'};
 const PAL={
-  pared:[['#eceeea','Blanco'],['#3b4247','Gris grafito'],['#1e4d3c','Verde billar'],['#5a1f2b','Vino'],['#1d2b45','Azul noche'],['#b98a3e','Ocre'],['#8f4a33','Ladrillo']],
-  pano:[['#1f6b4f','Verde clásico'],['#1f4f8a','Azul torneo'],['#6b1f2e','Vino'],['#5c6166','Gris'],['#1d1f22','Negro'],['#4b2a6b','Morado']],
+  cuerpo:[['#3a2416','Madera'],['#151618','Negro']],
+  pared:[['#eceeea','Blanco'],['#3b4247','Gris grafito'],['#2a2d33','Gris carbón'],['#2a1840','Morado noche'],['#1e4d3c','Verde billar'],['#5a1f2b','Vino'],['#1d2b45','Azul noche'],['#b98a3e','Ocre'],['#8f4a33','Ladrillo']],
+  pano:[['#1e8fd6','Azul eléctrico'],['#1f6b4f','Verde clásico'],['#1f4f8a','Azul torneo'],['#6b1f2e','Vino'],['#5c6166','Gris'],['#1d1f22','Negro'],['#4b2a6b','Morado']],
   barra:[['#6b4428','Madera'],['#1e1f21','Negro'],['#8f4a33','Ladrillo'],['#e9e7e2','Blanco'],['#1e4d3c','Verde']],
   neon:[['#ff4fb8','Rosa'],['#2ef2ff','Cian'],['#ffb02e','Ámbar'],['#4dff88','Verde'],['#f4f4f4','Blanco']],
   tela:[['#3d4a5c','Azul gris'],['#5a1f2b','Vino'],['#2b2b2b','Negro'],['#7a5a3a','Cuero']]
@@ -219,7 +220,7 @@ function propuesta(){
   add('tv',RW,2.4,0,{h:2.42},'der'); add('tv',7.1,16.8,0,{h:1.6},'tabique');
   add('sofa',9.55,16.8,3,{tela:'#3d4a5c'}); add('mesaAlta',8.3,15.95,0,{});
   add('planta',7.65,.35,0,{}); add('planta',7.4,17.7,0,{});
-  return {v:1,objs:o,paredes:Object.assign({},DEF_PAREDES),piso:'granito'};
+  return {v:1,objs:o,paredes:Object.assign({},DEF_PAREDES),piso:'granito',lamp:'clasica',ambiente:'calida'};
 }
 
 /* ---------- Preferencias de vista (solo este navegador) ---------- */
@@ -286,6 +287,7 @@ const FLOORS={
   granito:{n:'Granito pulido',d:'el de hoy, pulido y cristalizado',tile:.4,rough:.3,draw:(g,w,h)=>{ g.fillStyle='#c8cac4'; g.fillRect(0,0,w,h); const r=mulberry(7), cs=['#8e928c','#ecebe5','#6d716c','#b3a98f','#d9d6cc']; for(let i=0;i<1500;i++){ g.globalAlpha=.35+r()*.6; g.fillStyle=cs[i%cs.length]; const s=r()*2.4+.6; g.fillRect(r()*w,r()*h,s,s); } g.globalAlpha=1; g.strokeStyle='rgba(60,60,55,.35)'; g.lineWidth=2; g.strokeRect(1,1,w-2,h-2); }},
   cemento:{n:'Cemento pulido',d:'gris, sin juntas',tile:2,rough:.55,draw:(g,w,h)=>{ g.fillStyle='#9d9f9b'; g.fillRect(0,0,w,h); const r=mulberry(11); for(let i=0;i<70;i++){ const x=r()*w,y=r()*h,rad=20+r()*60, dk=r()<.5, gr=g.createRadialGradient(x,y,0,x,y,rad); gr.addColorStop(0,dk?'rgba(70,72,70,.18)':'rgba(222,224,220,.16)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(x-rad,y-rad,rad*2,rad*2); } }},
   negro:{n:'Porcelanato negro',d:'60 × 60 cm, brillante',tile:.6,rough:.25,draw:(g,w,h)=>{ g.fillStyle='#24272a'; g.fillRect(0,0,w,h); const r=mulberry(5); for(let i=0;i<600;i++){ g.fillStyle='rgba(255,255,255,'+(r()*.08).toFixed(3)+')'; g.fillRect(r()*w,r()*h,1.5,1.5); } g.strokeStyle='rgba(0,0,0,.65)'; g.lineWidth=3; g.strokeRect(1.5,1.5,w-3,h-3); }},
+  alfombra:{n:'Alfombra modular',d:'gris con azul, quita ruido',tile:.5,rough:.9,draw:(g,w,h)=>{ g.fillStyle='#454a52'; g.fillRect(0,0,w,h); const r=mulberry(9); for(let i=0;i<260;i++){ g.fillStyle=r()<.22?'rgba(52,140,225,.65)':(r()<.5?'rgba(96,102,110,.7)':'rgba(52,56,64,.7)'); g.fillRect(r()*w,r()*h,6+r()*70,2+r()*3); } g.strokeStyle='rgba(28,30,34,.55)'; g.lineWidth=2; g.strokeRect(1,1,w-2,h-2); }},
   madera:{n:'Vinilo tipo madera',d:'cálido, fácil de limpiar',tile:1.2,rough:.6,draw:(g,w,h)=>{ const r=mulberry(3), rows=6, cs=['#8a5a35','#94653d','#7d5130','#9b6b43']; for(let i=0;i<rows;i++){ const y0=i*h/rows; g.fillStyle=cs[i%4]; g.fillRect(0,y0,w,h/rows); for(let k=0;k<14;k++){ g.strokeStyle='rgba(50,28,12,'+(.08+r()*.12).toFixed(3)+')'; g.lineWidth=1; const y=y0+r()*h/rows; g.beginPath(); g.moveTo(0,y); g.bezierCurveTo(w*.3,y+r()*4-2,w*.6,y+r()*4-2,w,y); g.stroke(); } g.fillStyle='rgba(30,16,6,.5)'; g.fillRect(0,y0,w,1.5); g.fillRect((i%2?.35:.75)*w,y0,1.5,h/rows); } }}
 };
 const floorMat=new THREE.MeshLambertMaterial();
@@ -358,11 +360,12 @@ const tableroMat=std('#9aa1a5',{roughness:.5,metalness:.3});
 onWall(RW,5.6,[-1,0],attach.der,g=>{ mesh(box(.42,.58,.12),tableroMat,0,1.5,.06,g); });
 
 /* Cinta LED de ambiente (C5) */
-const stripMat=shared(new THREE.MeshBasicMaterial({color:col('#ffcf8a')}));
+const stripMat=shared(new THREE.MeshBasicMaterial({color:col('#ffcf8a')})), stripMatB=shared(new THREE.MeshBasicMaterial({color:col('#ffcf8a')}));
+const AMB={calida:{n:'Cálida',a:'#ffcf8a',b:'#ffcf8a'},morado:{n:'Morado',a:'#9b4dff',b:'#9b4dff'},azul:{n:'Azul',a:'#2e9bff',b:'#2e9bff'},mix:{n:'Morado y naranja',a:'#9b4dff',b:'#ff7a1a'}};
 mesh(box(.03,.03,15.4),stripMat,0,0,0,attach.izq).position.copy(P(.03,7.8,2.74));
-mesh(box(.03,.03,17.8),stripMat,0,0,0,attach.der).position.copy(P(RW-.03,9,2.74));
+mesh(box(.03,.03,17.8),stripMatB,0,0,0,attach.der).position.copy(P(RW-.03,9,2.74));
 mesh(box(9.6,.03,.03),stripMat,0,0,0,attach.fachada).position.copy(P(5,.03,2.74));
-mesh(box(2.8,.03,.03),stripMat,0,0,0,attach.fondo).position.copy(P(8.55,RD-.03,2.74));
+mesh(box(2.8,.03,.03),stripMatB,0,0,0,attach.fondo).position.copy(P(8.55,RD-.03,2.74));
 mesh(box(7,.03,.03),stripMat,0,0,0,scene).position.copy(P(3.55,15.52,2.74));
 
 /* ---------- Texturas de objetos ---------- */
@@ -379,7 +382,7 @@ let pickMeshes=[];
 const BALLS=['#f2c230','#2f5fd0','#d0302f','#6a3fb5','#f07b1d','#2c8a4a','#7a1f2b','#111111'];
 const BUILD={
   mesa(o){ const g=o.group, p=o.rec.p;
-    const wood=std('#3a2416',{roughness:.55}), dark=std('#1a1411',{roughness:.6}), felt=std(p.pano||'#1f6b4f',{own:true,emissive:col(p.pano||'#1f6b4f'),emissiveIntensity:0}), cush=std(p.pano||'#1f6b4f',{own:true}), black=std('#0b0b0b',{roughness:.5});
+    const wood=std(p.cuerpo||'#3a2416',{own:true}), dark=std('#1a1411',{roughness:.6}), felt=std(p.pano||'#1f6b4f',{own:true,emissive:col(p.pano||'#1f6b4f'),emissiveIntensity:0}), cush=std(p.pano||'#1f6b4f',{own:true}), black=std('#0b0b0b',{roughness:.5});
     cush.color.multiplyScalar(.78); o.mats={felt,cush};
     [[-.85,-.4],[.85,-.4],[-.85,.4],[.85,.4]].forEach(([x,z])=>mesh(box(.22,.12,.22),dark,x,.06,z,g));
     mesh(box(1.95,.5,.95),wood,0,.37,0,g); mesh(box(2.3,.12,1.3),wood,0,.70,0,g); mesh(box(2.04,.02,1.04),felt,0,.77,0,g);
@@ -394,10 +397,15 @@ const BUILD={
     m4.makeTranslation(-.55,.808,0); balls.setMatrixAt(15,m4); balls.setColorAt(15,col('#f4f1e8')); g.add(balls);
     const metal=std('#1b1f1d',{roughness:.4,metalness:.4}), shadeM=std('#173b2c',{roughness:.5,metalness:.2,side:THREE.DoubleSide});
     const bulb=new THREE.MeshBasicMaterial({color:col('#fff1cf')}); o.mats.bulb=bulb;
+    o.mats.wood=wood;
+    if(state.lamp==='marco'){ const fw=2.2, fd=1.2, fy=1.72;
+      [[0,-fd/2,fw,.05],[0,fd/2,fw,.05],[-fw/2,0,.05,fd],[fw/2,0,.05,fd]].forEach(([x,z,w,d])=>mesh(box(w,.04,d),bulb,x,fy,z,g));
+      const cg2=new THREE.CylinderGeometry(.005,.005,HT-fy,5); [[-fw/2,-fd/2],[fw/2,-fd/2],[-fw/2,fd/2],[fw/2,fd/2]].forEach(([x,z])=>mesh(cg2,metal,x,(HT+fy)/2,z,g)); }
+    else {
     mesh(box(1.5,.04,.1),metal,0,1.73,0,g);
     const shadeG=new THREE.CylinderGeometry(.05,.17,.17,20,1,true), discG=new THREE.CircleGeometry(.15,20);
     [-.5,0,.5].forEach(x=>{ mesh(shadeG,shadeM,x,1.645,0,g); mesh(discG,bulb,x,1.575,0,g).rotation.x=Math.PI/2; });
-    const cg=new THREE.CylinderGeometry(.006,.006,HT-1.75,6); [-.55,.55].forEach(x=>mesh(cg,metal,x,(HT+1.75)/2,0,g));
+    const cg=new THREE.CylinderGeometry(.006,.006,HT-1.75,6); [-.55,.55].forEach(x=>mesh(cg,metal,x,(HT+1.75)/2,0,g)); }
     contactShadow(2.8,1.8,g);
     o.mats.pool=glowMat('#ffd9a0'); glowPlane(3.6,2.6,o.mats.pool,g);
     const zw=2.3+2*CUE, zd=1.3+2*CUE;
@@ -479,10 +487,12 @@ function updateCut(){ const cx=camera.position.x+RW/2, cy=camera.position.z+RD/2
 /* ---------- Luces y circuitos ---------- */
 function cssVar(n,d){ const v=getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return isHex(v)?v:d; }
 function applyMode(){ invalidate(); const n=prefs.noche; hemi.intensity=n?(.035+(prefs.circ.C5?.13:0)):.85; sun.intensity=n?0:.5; renderer.toneMappingExposure=n?1.2:1;
-  scene.background=new THREE.Color(n?'#06090c':cssVar('--scene','#d3dcd9')); stripMat.color.copy(col(prefs.circ.C5?'#ffcf8a':'#3a3c3d')); }
+  const am=AMB[state.ambiente]||AMB.calida, on5=!!prefs.circ.C5;
+  scene.background=new THREE.Color(n?'#06090c':cssVar('--scene','#d3dcd9')); stripMat.color.copy(col(on5?am.a:'#3a3c3d')); stripMatB.color.copy(col(on5?am.b:'#3a3c3d'));
+  hemi.color.set(n&&on5?am.a:'#f3f6ff'); }
 function applyObjLights(o){ const t=o.rec.t, N=prefs.noche;
   invalidate();
-  if(t==='mesa'){ const on=!!prefs.circ[o.rec.p.c]; o.mats.bulb.color.copy(col(on?'#fff1cf':'#3b3d3c')); o.mats.felt.emissiveIntensity=on?(N?.4:.05):0; o.mats.pool.opacity=on?(N?.6:.14):0; }
+  if(t==='mesa'){ const on=!!prefs.circ[o.rec.p.c]; o.mats.bulb.color.copy(col(on?(state.lamp==='marco'?'#eaf6ff':'#fff1cf'):'#3b3d3c')); o.mats.felt.emissiveIntensity=on?(N?.4:.05):0; o.mats.pool.opacity=on?(N?.6:.14):0; }
   else if(t==='barra'){ const on=!!prefs.circ.C3; o.mats.bulb.color.copy(col(on?'#ffe2b0':'#3b3d3c')); o.mats.glass.emissiveIntensity=on?.7:0; o.mats.pool.opacity=on?(N?.5:.1):0; }
   else if(t==='tv'){ const on=!!prefs.circ.C4; if(on!==o.tvOn){ const old=o.mats.scr.map; o.mats.scr.map=tvTex(on); o.mats.scr.needsUpdate=true; if(old) old.dispose(); o.tvOn=on; } }
   else if(t==='aviso'){ const on=!!prefs.circ.C5; if(on!==o.avisoOn){ const a=avisoTex(o.rec.p.texto||'BILLAR',o.rec.p.color||'#ff4fb8',on), old=o.mats.txt.map; o.mats.txt.map=a.tex; o.mats.txt.needsUpdate=true; if(old) old.dispose(); o.avisoOn=on; }
@@ -587,10 +597,10 @@ function onUp(e){ if(!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId); t
   if(ptrs.size===0){ gesture=null; down=null; } else if(gesture&&gesture.t==='pinch'){ gesture={t:'rotate'}; down=null; } }
 
 /* ---------- Estado, deshacer y guardado ---------- */
-function serialize(){ return {v:1,objs:state.objs.map(o=>{ const c={id:o.id,t:o.t,x:Math.round(o.x*1000)/1000,y:Math.round(o.y*1000)/1000,r:o.r,p:Object.assign({},o.p)}; if(o.w) c.w=o.w; return c; }),paredes:Object.assign({},state.paredes),piso:state.piso}; }
+function serialize(){ return {v:1,objs:state.objs.map(o=>{ const c={id:o.id,t:o.t,x:Math.round(o.x*1000)/1000,y:Math.round(o.y*1000)/1000,r:o.r,p:Object.assign({},o.p)}; if(o.w) c.w=o.w; return c; }),paredes:Object.assign({},state.paredes),piso:state.piso,lamp:state.lamp,ambiente:state.ambiente}; }
 function snap(){ return JSON.stringify(serialize()); }
 function clean(s){ const objs=(Array.isArray(s.objs)?s.objs:[]).filter(o=>o&&(DIM[o.t]||WALLI[o.t])).slice(0,200).map(o=>{ const p=(o.p&&typeof o.p==='object')?o.p:{}, c={id:String(o.id||uid()).slice(0,40),t:o.t,x:+o.x||0,y:+o.y||0,r:((o.r|0)%4+4)%4,p:{}};
-    if(o.t==='mesa'){ c.p.num=Math.max(1,Math.min(99,p.num|0||1)); c.p.c=p.c==='C1'?'C1':'C2'; c.p.pano=hex(p.pano,'#1f6b4f'); }
+    if(o.t==='mesa'){ c.p.num=Math.max(1,Math.min(99,p.num|0||1)); c.p.c=p.c==='C1'?'C1':'C2'; c.p.pano=hex(p.pano,'#1f6b4f'); c.p.cuerpo=hex(p.cuerpo,'#3a2416'); }
     if(o.t==='barra') c.p.frente=hex(p.frente,'#6b4428');
     if(o.t==='sofa') c.p.tela=hex(p.tela,'#3d4a5c');
     if(WALLI[o.t]){ c.w=WALLS.some(w=>w.id===o.w)?o.w:'izq'; c.p.h=Math.min(2.5,Math.max(.6,+p.h||WALLI[o.t].h)); }
@@ -598,7 +608,7 @@ function clean(s){ const objs=(Array.isArray(s.objs)?s.objs:[]).filter(o=>o&&(DI
     if(o.t==='cuadro') c.p.seed=Math.max(1,Math.min(999,p.seed|0||1));
     return c; });
   const paredes={}; Object.keys(DEF_PAREDES).forEach(k=>{ paredes[k]=hex(s.paredes&&s.paredes[k],DEF_PAREDES[k]); });
-  return {v:1,objs,paredes,piso:FLOORS[s.piso]?s.piso:'granito'}; }
+  return {v:1,objs,paredes,piso:FLOORS[s.piso]?s.piso:'granito',lamp:s.lamp==='marco'?'marco':'clasica',ambiente:AMB[s.ambiente]?s.ambiente:'calida'}; }
 function applyState(s){ if(!s||typeof s!=='object') return; const keepSel=sel; state=clean(s); Array.from(live.keys()).forEach(removeLive); sel=state.objs.some(o=>o.id===keepSel)?keepSel:null; state.objs.forEach(addLive); applyWalls(); setFloor(state.piso); if(selWall) wallMats[selWall].emissive.copy(col('#3a2a00')); afterChange(); }
 const undo=[];
 function afterChange(){ runCheck(); renderSel(); renderAcab(); renderCirc(); renderRev(); buildWiring(); $('#b-undo').disabled=!undo.length; }
@@ -672,7 +682,7 @@ function renderSel(){ const el=$('#p-sel');
   if(isWall(r.t)) a.push('<button type="button" class="btn" data-act="up">Subir</button><button type="button" class="btn" data-act="down">Bajar</button>');
   if(r.t!=='barra') a.push('<button type="button" class="btn" data-act="dup">Duplicar</button>');
   a.push('<button type="button" class="btn" data-act="del">Eliminar</button>'); h+='<div class="row">'+a.join('')+'</div>';
-  if(r.t==='mesa') h+='<div><h3>Paño</h3>'+swatches(PAL.pano,r.p.pano,'data-pano')+'</div><div><h3>Circuito de la lámpara</h3><div class="seg" role="group" aria-label="Circuito de la lámpara"><button type="button" class="btn" data-circ="C1" aria-pressed="'+(r.p.c==='C1')+'">C1 · fila 1</button><button type="button" class="btn" data-circ="C2" aria-pressed="'+(r.p.c==='C2')+'">C2 · fila 2</button></div></div>';
+  if(r.t==='mesa') h+='<div><h3>Paño</h3>'+swatches(PAL.pano,r.p.pano,'data-pano')+'</div><div><h3>Cuerpo</h3>'+swatches(PAL.cuerpo,r.p.cuerpo||'#3a2416','data-cuerpo')+'</div><div><h3>Circuito de la lámpara</h3><div class="seg" role="group" aria-label="Circuito de la lámpara"><button type="button" class="btn" data-circ="C1" aria-pressed="'+(r.p.c==='C1')+'">C1 · fila 1</button><button type="button" class="btn" data-circ="C2" aria-pressed="'+(r.p.c==='C2')+'">C2 · fila 2</button></div></div>';
   if(r.t==='barra') h+='<div><h3>Frente de la barra</h3>'+swatches(PAL.barra,r.p.frente,'data-frente')+'</div>';
   if(r.t==='sofa') h+='<div><h3>Tela</h3>'+swatches(PAL.tela,r.p.tela,'data-tela')+'</div>';
   if(r.t==='aviso') h+='<label class="f" for="av-text">Texto del aviso (máx. 16 letras) <input type="text" id="av-text" maxlength="16" value="'+esc(r.p.texto||'')+'"></label><div><h3>Color del neón</h3>'+swatches(PAL.neon,r.p.color,'data-neon')+'</div><p class="small muted">Antes de mandar a hacer un aviso con nombre, revisa en la SIC que la marca esté libre.</p>';
@@ -680,11 +690,16 @@ function renderSel(){ const el=$('#p-sel');
   el.innerHTML=h; }
 function renderAcab(){ const fl=Object.keys(FLOORS).map(k=>'<button type="button" class="btn" data-floor="'+k+'" aria-pressed="'+(state.piso===k)+'">'+FLOORS[k].n+'<br><small class="muted">'+FLOORS[k].d+'</small></button>').join('');
   const mesas=state.objs.filter(o=>o.t==='mesa'), barra=state.objs.find(o=>o.t==='barra');
-  $('#p-acab').innerHTML='<div><h2>Acabados</h2><p class="muted small">Piso, pintura y colores generales. Para pintar una sola pared, tócala en el 3D.</p></div>'+
+  const lam='<div class="seg" role="group" aria-label="Lámparas de mesa"><button type="button" class="btn" data-lamp="clasica" aria-pressed="'+(state.lamp!=='marco')+'">3 pantallas</button><button type="button" class="btn" data-lamp="marco" aria-pressed="'+(state.lamp==='marco')+'">Marco LED</button></div>';
+  const amb='<div class="grid2">'+Object.keys(AMB).map(k=>'<button type="button" class="btn" data-amb="'+k+'" aria-pressed="'+(state.ambiente===k)+'"><span class="dot" style="display:inline-block;margin-right:6px;background:'+AMB[k].a+'"></span>'+AMB[k].n+'</button>').join('')+'</div>';
+  $('#p-acab').innerHTML='<div><h2>Acabados</h2><p class="muted small">Piso, pintura, luces y colores generales. Para pintar una sola pared, tócala en el 3D.</p></div>'+
+    '<div><h3>Estilo de tus fotos</h3><p class="small muted" style="margin-bottom:8px">Paños azul eléctrico, mesas negras, marcos LED, neón morado y naranja, alfombra y muros carbón.</p><button type="button" class="btn" data-estilo="fotos">Aplicar el estilo de las fotos</button></div>'+
+    '<div><h3>Lámparas de las mesas</h3>'+lam+'</div>'+
+    '<div><h3>Luz de ambiente (neón, C5)</h3>'+amb+'</div>'+
     '<div><h3>Piso</h3><div class="grid2">'+fl+'</div></div>'+
     '<div><h3>Muros del salón</h3>'+swatches(PAL.pared,state.paredes.izq,'data-wallall')+'</div>'+
     '<div><h3>Fachada por dentro</h3>'+swatches(PAL.pared,state.paredes.fachada,'data-wallk="fachada" data-c')+'</div>'+
-    (mesas.length?'<div><h3>Paño de todas las mesas</h3>'+swatches(PAL.pano,mesas[0].p.pano,'data-panoall')+'</div>':'')+
+    (mesas.length?'<div><h3>Paño de todas las mesas</h3>'+swatches(PAL.pano,mesas[0].p.pano,'data-panoall')+'</div><div><h3>Cuerpo de todas las mesas</h3>'+swatches(PAL.cuerpo,mesas[0].p.cuerpo||'#3a2416','data-cuerpoall')+'</div>':'')+
     (barra?'<div><h3>Frente de la barra</h3>'+swatches(PAL.barra,barra.p.frente,'data-barraall')+'</div>':'')+
     '<p class="small muted">La propuesta: muros del salón en gris grafito mate, granito pulido y paño verde. Lo oscuro hace que las mesas iluminadas resalten.</p>'; }
 function renderCirc(){ const {L,who}=cargas(); let h='<div><h2>Circuitos</h2><p class="muted small">Apaga un circuito para ver cómo queda el local sin esas luces. El tablero va en el muro derecho, junto a la barra.</p></div><div>';
@@ -724,6 +739,7 @@ $('#p-sel').addEventListener('click',e=>{ const b=e.target.closest('button'); if
   else if(act==='del'){ removeObj(r.id); commit(before); }
   else if(act==='art'){ r.p.seed=((r.p.seed||1)*7+13)%997||1; rebuild(r.id); commit(before); }
   else if(b.dataset.pano){ r.p.pano=b.dataset.pano; o.mats.felt.color.copy(col(r.p.pano)); o.mats.felt.emissive.copy(col(r.p.pano)); o.mats.cush.color.copy(col(r.p.pano)).multiplyScalar(.78); commit(before); }
+  else if(b.dataset.cuerpo){ r.p.cuerpo=b.dataset.cuerpo; o.mats.wood.color.copy(col(r.p.cuerpo)); commit(before); }
   else if(b.dataset.circ){ r.p.c=b.dataset.circ; applyObjLights(o); commit(before); }
   else if(b.dataset.frente){ r.p.frente=b.dataset.frente; o.mats.front.color.copy(col(r.p.frente)); commit(before); }
   else if(b.dataset.tela){ r.p.tela=b.dataset.tela; o.mats.tela.color.copy(col(r.p.tela)); commit(before); }
@@ -734,8 +750,17 @@ $('#p-sel').addEventListener('input',e=>{ const o=sel&&live.get(sel);
   if(e.target.id==='wcol'&&selWall&&isHex(e.target.value)){ state.paredes[selWall]=e.target.value; applyWalls(); } });
 $('#p-sel').addEventListener('change',e=>{ if((e.target.id==='av-text'||e.target.id==='wcol')&&fieldBefore){ const b=fieldBefore; fieldBefore=null; commit(b); } });
 $('#p-add').addEventListener('click',e=>{ const b=e.target.closest('[data-add]'); if(!b) return; const before=snap(); addItem(b.dataset.add); commit(before); if(sel) switchTab('sel'); });
+function rebuildMesas(){ state.objs.filter(o=>o.t==='mesa').forEach(o=>rebuild(o.id)); }
+function estiloFotos(){ ['izq','der','fondo','fachada'].forEach(k=>{ state.paredes[k]='#2a2d33'; }); state.piso='alfombra'; state.lamp='marco'; state.ambiente='mix';
+  state.objs.forEach(o=>{ if(o.t==='mesa'){ o.p.pano='#1e8fd6'; o.p.cuerpo='#151618'; } if(o.t==='barra') o.p.frente='#1e1f21'; if(o.t==='aviso') o.p.color='#2ef2ff'; });
+  applyWalls(); setFloor(state.piso); state.objs.filter(o=>o.t==='mesa'||o.t==='barra'||o.t==='aviso').forEach(o=>rebuild(o.id));
+  prefs.noche=true; savePrefs(); setToggle('#b-noche',true); applyAllLights(); setHint('Estilo de las fotos aplicado. Toca Noche para verlo de día.',4000); }
 $('#p-acab').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const before=snap();
-  if(b.dataset.floor){ state.piso=b.dataset.floor; setFloor(state.piso); }
+  if(b.dataset.estilo){ estiloFotos(); }
+  else if(b.dataset.lamp){ state.lamp=b.dataset.lamp; rebuildMesas(); }
+  else if(b.dataset.amb){ state.ambiente=b.dataset.amb; applyAllLights(); }
+  else if(b.dataset.cuerpoall){ state.objs.forEach(o=>{ if(o.t==='mesa'){ o.p.cuerpo=b.dataset.cuerpoall; const l=live.get(o.id); if(l) l.mats.wood.color.copy(col(o.p.cuerpo)); } }); }
+  else if(b.dataset.floor){ state.piso=b.dataset.floor; setFloor(state.piso); }
   else if(b.dataset.wallall){ ['izq','der','fondo'].forEach(k=>{ state.paredes[k]=b.dataset.wallall; }); applyWalls(); }
   else if(b.dataset.wallk){ state.paredes[b.dataset.wallk]=b.getAttribute('data-c')||b.dataset.c; }
   else if(b.dataset.panoall){ state.objs.forEach(o=>{ if(o.t==='mesa'){ o.p.pano=b.dataset.panoall; const l=live.get(o.id); if(l){ l.mats.felt.color.copy(col(o.p.pano)); l.mats.felt.emissive.copy(col(o.p.pano)); l.mats.cush.color.copy(col(o.p.pano)).multiplyScalar(.78); } } }); }
